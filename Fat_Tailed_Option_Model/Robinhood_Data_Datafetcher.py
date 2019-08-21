@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dask import delayed
 from time import time
-from time.to_datetime import today
+from pd.datetime import today
 from fast_arrow import Client, Stock, OptionChain, Option,OptionMarketdata,StockMarketdata
 class Robinhood_Data:
 
@@ -24,6 +24,11 @@ class Robinhood_Data:
     Analyses."""
 
     def __init__(self,username,password):
+        """The Biggest Challenge to Using the Robinhood Data is figuring out the client
+        authentication. They use Multifactor authentication, so you have to figure out a way
+        to add your credentials. The way I have it set up is that I get an email, adn the code
+        automatically parses my email to get the code."""
+
         self.client = Client(username=username, password=password)
         self.client.authenticate() # this part can use some finagling.
 
@@ -31,6 +36,9 @@ class Robinhood_Data:
 
 
     def get_spot_price(self,symbol):
+        """Returns a dictionary of data about the spot price,
+        which includes bid, ask, bid size, ask size, as well as some api identification"""
+
         stock1= Stock.fetch(self.client, symbol)
         stock = StockMarketdata.quote_by_instrument(self.client,_id =stock1['id'])
 
@@ -39,9 +47,11 @@ class Robinhood_Data:
 
 
     def _process_spot_price(self,spot_price_object):
+        """returns mid point price"""
         return (float(spot_price_object['bid_price'])+ float(spot_price_object['ask_price']))/2
 
     def __convert_to_float(self,x):
+
         try:
             return np.float(x)
         except:
