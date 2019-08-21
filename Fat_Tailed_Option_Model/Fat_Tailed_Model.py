@@ -9,8 +9,7 @@ from Robinhood_Data_Datafetcher import Robinhood_Data
 import pandas as pd
 import numpy as np
 from scipy.optimize import minimize
-call_sample= pd.read_pickle('AAPL_Calls.pickle')
-put_sample = pd.read_pickle('AAPL_Puts.pickle')
+
 #call + put are from EOD August 2, 2019
 spot_sample = 204.00
 class Fat_Tailed_Option_Model:
@@ -98,7 +97,7 @@ class Fat_Tailed_Option_Model:
         return np.real(ans)
 
     def _pareto_put_price(self,spot,K,alpha,L):
-        """Returns the price of a Put option as a function of (Spot, Strike, Alpha, L)"""""""
+        "Returns the price of a Put option as a function of (Spot, Strike, Alpha, L)"
         strike = K
         num = -(L**alpha)*((spot - strike + (strike-spot)*((1-strike/spot)**-alpha)+strike*alpha))
         denom = alpha - 1
@@ -113,7 +112,7 @@ class Fat_Tailed_Option_Model:
         return model_put_prices.values
 
     def _apply_model_to_all_call_option(self,alpha_input,L0):
-    """Applies Model Price to Call Option DataFrame (DEEP OTM)"""
+        """Applies Model Price to Call Option DataFrame (DEEP OTM)"""
         c = self.deep_otm_calls.copy()
 
         model_call_prices = c.apply(lambda col: self._pareto_call_price(spot = col['spot_price'],K = col['strike_price'],alpha = alpha_input,L = L0*np.sqrt(col['time_to_expiry'])),axis=1)
