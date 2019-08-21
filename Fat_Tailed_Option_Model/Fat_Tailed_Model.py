@@ -12,6 +12,7 @@ from scipy.optimize import minimize
 call_sample= pd.read_pickle('AAPL_Calls.pickle')
 put_sample = pd.read_pickle('AAPL_Puts.pickle')
 #call + put are from EOD August 2, 2019
+
 spot_sample = 204.00
 class Fat_Tailed_Option_Model:
     def __init__(self, symbol,call_option_dataframe,put_option_dataframe,evaluation_date,cutoff_thresh = 0.15):
