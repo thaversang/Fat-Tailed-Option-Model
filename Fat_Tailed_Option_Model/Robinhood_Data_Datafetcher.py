@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dask import delayed
 from time import time
-from pd.datetime import today
+get_today = pd.datetime.today
 from fast_arrow import Client, Stock, OptionChain, Option,OptionMarketdata,StockMarketdata
 class Robinhood_Data:
 
