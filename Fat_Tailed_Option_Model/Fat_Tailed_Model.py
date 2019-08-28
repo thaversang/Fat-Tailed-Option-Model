@@ -11,7 +11,7 @@ import numpy as np
 from scipy.optimize import minimize
 
 #call + put are from EOD August 2, 2019
-spot_sample = 204.00
+spot_sample = 286.855
 class Fat_Tailed_Option_Model:
     def __init__(self, symbol,call_option_dataframe,put_option_dataframe,evaluation_date,cutoff_thresh = 0.15):
         self.calls = call_option_dataframe
