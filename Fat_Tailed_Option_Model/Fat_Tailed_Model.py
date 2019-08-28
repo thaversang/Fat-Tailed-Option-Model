@@ -116,25 +116,27 @@ class Fat_Tailed_Option_Model:
         c = self.deep_otm_calls.copy()
 
         model_call_prices = c.apply(lambda col: self._pareto_call_price(spot = col['spot_price'],K = col['strike_price'],alpha = alpha_input,L = L0*np.sqrt(col['time_to_expiry'])),axis=1)
-        return model_call_prices
+        return model_call_prices.values
 
     def _call_prices_error_function(self,inputs,price_column_name,weights = 'open_interest'):
         """A Weighted Sum of Squared Errors to Fit the Model To Real Prices"""
         if weights == 'ones':
-            weigths = 1.000
+            sum_weights = 1.000
         else:
-            weigths = self.deep_otm_calls[weights].copy()
+            sum_weights = self.deep_otm_calls[weights].copy()
         alpha_input = inputs[0]
         L0_input = inputs[1]
-        model_put_price = self._apply_model_to_all_call_option(alpha_input = alpha_input,L0 = L0_input)
-        errors = ((model_put_price - self.deep_otm_calls[price_column_name])**2)*self.deep_otm_calls.open_interest
+        model_call_price = self._apply_model_to_all_call_option(alpha_input = alpha_input,L0 = L0_input)
+        errors = (((model_call_price - self.deep_otm_calls[price_column_name]))**2)*sum_weights
         return np.sum(errors)
 
-    def fit_calls(self,price_column_name = 'last_trade_price',weights = 'open_interest'):
+    def fit_calls(self,price_column_name = 'last_trade_price',weights = 'ones'):
         """Fitting Procedure which minimizes our SSE"""
         func = lambda x: self._call_prices_error_function(x,price_column_name = price_column_name,weights = weights)
-        alpha_call_fit,L0_call_fit =  minimize(func,[2,0.1],method ='Nelder-Mead').x
-        self.deep_otm_calls['model_price'] = self._apply_model_to_all_call_option(alpha_call_fit,L0_call_fit)
+        alpha_call_fit,L0_call_fit =  minimize(func,[4,0.1],method ='Nelder-Mead').x
+
+        fit_prices = self._apply_model_to_all_call_option(alpha_call_fit,L0_call_fit)
+        self.deep_otm_calls['model_price'] = np.array(fit_prices)
         self.call_alpha = alpha_call_fit
         self.call_L0 = L0_call_fit
 
@@ -142,21 +144,22 @@ class Fat_Tailed_Option_Model:
     def _put_prices_error_function(self,inputs,price_column_name,weights = 'ones'):
         """A Weighted Sum of Squared Errors to Fit the Model To Real Prices"""
         if weights == 'ones':
-            weigths = 1.000
+            sum_weights = 1.000
         else:
-            weights = self.deep_otm_puts[weights]
+            sum_weights = self.deep_otm_puts[weights]
         alpha_input = inputs[0]
         L0_input = inputs[1]
+
         model_put_price = self._apply_model_to_all_put_option(alpha_input = alpha_input,L0 = L0_input)
-        errors = ((model_put_price - self.deep_otm_puts[price_column_name])**2)*self.deep_otm_puts.open_interest
+        errors = ((model_put_price - self.deep_otm_puts[price_column_name])**2)*sum_weights
         return np.sum(errors)
 
     def fit_puts(self,price_column_name ='last_trade_price',weights = 'ones'):
         """Fitting Procedure which minimizes our SSE"""
         func = lambda x: self._put_prices_error_function(x,price_column_name = price_column_name,weights = weights)
-        alpha_put_fit,L0_put_fit =  minimize(func,[2,0.1],method ='Nelder-Mead').x
+        alpha_put_fit,L0_put_fit =  minimize(func,[2.0,0.1],method ='Nelder-Mead').x
         fit_prices = self._apply_model_to_all_put_option(alpha_put_fit,L0_put_fit)
-        self.deep_otm_puts['model_price'] = fit_prices
+        self.deep_otm_puts['model_price'] = np.array(fit_prices)
         self.put_alpha = alpha_put_fit
         self.put_L0 = L0_put_fit
 
